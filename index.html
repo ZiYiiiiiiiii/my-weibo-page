@@ -1,90 +1,118 @@
-</html>
 <!doctype html>
 <html lang="ja">
 <head>
   <meta charset="utf-8">
   <title>ミツカレタ！</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500&family=Noto+Serif+JP:wght@400;600&display=swap');
 
-    body {
-      background: radial-gradient(circle at center, #0a0a0a 0%, #000000 100%);
-      color: #ddd;
-      font-family: 'Noto Serif JP', serif;
-      text-align: center;
-      margin: 0;
-      padding: 3rem 1rem;
+    :root{
+      --bg1:#05070a; /* 深い黒に近い群青 */
+      --bg2:#000000;
+      --ice:#cfeaff; /* 氷色 */
+      --ice-weak:#9fc9ff;
+      --text:#d9d9d9;
     }
 
-    h1 {
-      font-family: 'Cinzel', serif;
-      font-size: 2.2rem;
-      color: #e3e3e3;
-      letter-spacing: 0.1em;
-      text-shadow: 0 0 8px rgba(255,255,255,0.15);
-      margin-bottom: 1rem;
+    html,body{height:100%;}
+    body{
+      margin:0; padding:0; overflow-x:hidden; text-align:center;
+      color:var(--text); background:radial-gradient(1200px 600px at 50% 20%, var(--bg1), var(--bg2));
+      font-family:'Noto Serif JP', serif; position:relative; min-height:100vh;
     }
 
-    p {
-      font-size: 1rem;
-      line-height: 1.7;
-      color: #bfbfbf;
-      max-width: 600px;
-      margin: 0 auto 1.5rem;
+    /* 雪のコンテナ */
+    .snow-wrap{ pointer-events:none; position:fixed; inset:0; overflow:hidden; z-index:0; }
+
+    /* ページ本体 */
+    .wrap{ position:relative; z-index:1; padding:3rem 1rem 4rem; }
+
+    h1{
+      font-family:'Cinzel', serif; font-size:clamp(28px, 4vw, 42px); margin:0 0 1rem;
+      color:var(--ice); letter-spacing:0.08em;
+      text-shadow:0 0 10px rgba(160,210,255,.6), 0 0 30px rgba(160,210,255,.25);
+      filter: drop-shadow(0 0 6px rgba(160,210,255,.25));
     }
 
-    img {
-      max-width: 90%;
-      border-radius: 12px;
-      box-shadow: 0 0 25px rgba(255,255,255,0.1);
-      margin: 2rem 0;
+    p{max-width:720px; margin:0 auto 1.2rem; line-height:1.8; color:#bfc7d6}
+
+    .shot{
+      max-width:min(920px,92vw); border-radius:16px; margin:2rem auto;
+      box-shadow:0 0 40px rgba(160,210,255,.15), 0 0 8px rgba(160,210,255,.35) inset;
+      outline:1px solid rgba(180,220,255,.18);
+      display:block;
     }
 
-    a.button {
-      display: inline-block;
-      background: linear-gradient(145deg, #2a2a2a, #1b1b1b);
-      color: #e3e3e3;
-      text-decoration: none;
-      font-weight: 600;
-      border: 1px solid #555;
-      padding: 0.8rem 1.8rem;
-      border-radius: 10px;
-      transition: all 0.3s ease;
-      letter-spacing: 0.05em;
+    .btn{
+      display:inline-block; text-decoration:none; font-weight:600; letter-spacing:.06em;
+      padding:.9rem 1.6rem; border-radius:12px; border:1px solid rgba(180,220,255,.35);
+      color:#e9f4ff; background:linear-gradient(145deg,rgba(40,60,80,.55),rgba(20,28,38,.75));
+      box-shadow:0 0 18px rgba(160,210,255,.25), inset 0 0 10px rgba(160,210,255,.25);
+      transition:transform .2s ease, box-shadow .3s ease, filter .3s ease;
+      backdrop-filter: blur(3px);
     }
+    .btn:hover{ transform:translateY(-2px); box-shadow:0 0 26px rgba(160,210,255,.45), inset 0 0 14px rgba(160,210,255,.35); }
 
-    a.button:hover {
-      background: linear-gradient(145deg, #3d3d3d, #2a2a2a);
-      color: #fff;
-      box-shadow: 0 0 12px rgba(255,255,255,0.2);
+    footer{ margin-top:2.5rem; font-size:.9rem; color:#8ea3bd }
+
+    /* 雪アニメーション（JSでspanを生成し、ここで落下アニメ） */
+    .flake{
+      position:absolute; top:-10px; width:6px; height:6px; border-radius:50%;
+      background:radial-gradient(circle at 30% 30%, #fff, #cfeaff 60%, transparent 70%);
+      box-shadow:0 0 10px rgba(200,230,255,.6);
+      opacity:.9; animation:fall linear var(--dur) var(--delay) infinite;
+      filter: drop-shadow(0 0 6px rgba(160,210,255,.35));
     }
-
-    footer {
-      margin-top: 3rem;
-      font-size: 0.85rem;
-      color: #666;
+    @keyframes fall{
+      0%{ transform:translate3d(var(--start-x), -8vh, 0) rotate(0deg); opacity:.0 }
+      10%{opacity:.95}
+      50%{ transform:translate3d(calc(var(--start-x) + var(--drift)), 50vh, 0) rotate(180deg) }
+      100%{ transform:translate3d(calc(var(--start-x) + var(--drift)*2), 105vh, 0) rotate(360deg); opacity:.95 }
     }
   </style>
 </head>
-
 <body>
-  <h1>ZiYi ― Weibo 公開ページ</h1>
-  <p>この絵を描いた人です
+  <div class="snow-wrap" id="snow"></div>
+
+  <main class="wrap">
+    <h1>ZiYi ― Weibo 公開ページ</h1>
+    <p>この絵を描いた人です
     中国SNS「微博」(weibo)で作品や写真を投稿しています。
     ここでは私の微博ページをご案内します。</p>
 
-  <img src="https://youke1.picui.cn/s1/2025/10/26/68fdfd9c27a59.png" alt="ZiYi">
+    <img class="shot" src="https://youke1.picui.cn/s1/2025/10/26/68fdfd9c27a59.png" alt="ZiYi（公開用画像）">
 
-  <p>
-    <a class="button" href="https://weibo.com/u/2274839723" target="_blank">
-      微博ページを開く
-    </a>
-  </p>
+    <p>
+      <a class="btn" href="★https://weibo.com/u/2274839723" target="_blank" rel="noopener">微博ページを開く</a>
+    </p>
 
-  <footer>
-    © 2025 ZiYi ―　teikagi@icloud.com
-  </footer>
+    <footer>© 2025 ZiYi ― teikagi@icloud.com</footer>
+  </main>
+
+  <script>
+    // 軽量な雪生成：初期ロード時に一定数の雪片をばら撒く
+    (function(){
+      const container = document.getElementById('snow');
+      const COUNT = 80; // ★雪の密度（増やすと華やか・負荷は少し上がる）
+      for(let i=0;i<COUNT;i++){
+        const s = document.createElement('span');
+        s.className = 'flake';
+        const size = 4 + Math.random()*8; // 4~12px
+        s.style.width = size+'px';
+        s.style.height = size+'px';
+        const startX = Math.random()*100; // vw
+        const drift = (Math.random()*20 - 10); // -10~10vw
+        const dur = 8 + Math.random()*12; // 8~20s
+        const delay = Math.random()*-dur; // すぐにばらけて降る
+        s.style.setProperty('--start-x', startX+'vw');
+        s.style.setProperty('--drift', drift+'vw');
+        s.style.setProperty('--dur', dur+'s');
+        s.style.setProperty('--delay', delay+'s');
+        container.appendChild(s);
+      }
+    })();
+  </script>
 </body>
 </html>
+```
